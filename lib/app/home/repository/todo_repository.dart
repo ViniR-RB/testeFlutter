@@ -18,8 +18,11 @@ class TodoRepositoryImpl implements TodoRepository {
     try {
       final response = await dataSource.getTodo();
 
-      final List<TodoModel> todo =
-          response.map(TodoAdapter.toModel).toList() as List<TodoModel>;
+      final todo = response.fold((sucess) {
+        sucess.map(TodoAdapter.toModel).toList();
+      }, (failure) {
+        throw failure;
+      });
       return Success(todo);
     } on DioError catch (e) {
       return Failure(TodoFetchError(e.message!));

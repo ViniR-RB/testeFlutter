@@ -1,21 +1,23 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:result_dart/result_dart.dart';
+import 'package:testes/app/home/exceptions/todo_exception.dart';
 
 import '../../core/constants/url.dart';
-import '../../core/models/todo_model.dart';
-import '../exceptions/todo_exception.dart';
 
 abstract class TodoDataSource {
-  Future<List<dynamic>> getTodo();
+  AsyncResult<List<dynamic>, TodoException> getTodo();
 }
 
 class TodoDataSourceDioImpl implements TodoDataSource {
   Dio dio;
   TodoDataSourceDioImpl({required this.dio});
-  Future<List<dynamic>> getTodo() async {
+  @override
+  AsyncResult<List<dynamic>, TodoException> getTodo() async {
     final response = await dio.get(todosUrl);
-    List<dynamic> data = response.data as List;
-    return data;
+    if (response.statusCode == 500) {
+      return Failure(TodoFetchError('Foi impossível carregar a Lista de Todos'));
+    }
+    List<dynamic> data = response.data;
+    return Success(data);
   }
 }
